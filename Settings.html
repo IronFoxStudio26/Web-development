@@ -1,0 +1,1088 @@
+﻿<!DOCTYPE html>
+
+<html lang="en">
+
+	<header>
+
+		<a href="index.html" class="logo">
+			🎮 Iron Fox Studio
+		</a>
+		
+		<div class="profile-box"></div>
+		
+		<button id="signUpBtn"></button>
+		
+		<div id="profileMenu" class="profile-menu">
+
+			<a href="#" id="logoutBtn">🚪 Sign Out</a>
+
+		</div>
+<style>
+
+body{
+
+    margin:0;
+
+    font-family:Segoe UI;
+
+    background:linear-gradient(180deg,#1b2838,#0f1923);
+
+    color:white;
+
+}
+
+header{
+    height:70px;
+    background:#171a21;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    padding:0 35px;
+    border-bottom:1px solid rgba(255,255,255,.1);
+}
+
+.logo{
+
+    color:white;
+
+    text-decoration:none;
+
+    font-size:28px;
+
+    font-weight:bold;
+
+}
+
+.container{
+
+    display:flex;
+
+    min-height:calc(100vh - 70px);
+
+}
+
+.sidebar{
+    width:260px;
+    background:#16202d;
+    padding:30px;
+    padding-left:25px;
+    border-right:1px solid rgba(255,255,255,.08);
+}
+.sidebar h2{
+
+    margin-bottom:35px;
+
+}
+
+.sidebar a{
+
+    display:block;
+
+    color:white;
+
+    text-decoration:none;
+
+    padding:15px;
+
+    margin-bottom:10px;
+
+    border-radius:8px;
+
+    transition:.25s;
+
+}
+
+.sidebar a:hover{
+
+    background:#6c4cff;
+
+}
+
+.content{
+
+    flex:1;
+
+    text-align:center;
+
+    padding:50px;
+
+}
+
+#avatar{
+
+    width:140px;
+
+    height:140px;
+
+    border-radius:50%;
+
+    border:4px solid #6c4cff;
+
+    margin-top:10px;
+
+}
+#name{
+    margin-top: 25px;
+    margin-bottom: 5px;
+}
+
+#email{
+    margin-top: 0;
+    margin-bottom: 20px;
+    color: #b5b5b5;
+}
+
+.saveBtn{
+
+    margin-top:30px;
+
+    padding:14px 35px;
+
+    background:#6c4cff;
+
+    color:white;
+
+    border:none;
+
+    border-radius:8px;
+
+    cursor:pointer;
+
+    font-size:17px;
+
+}
+
+.saveBtn:hover{
+
+    background:#846aff;
+
+}
+.menu-item{
+
+padding:15px;
+
+border-radius:10px;
+
+margin-bottom:10px;
+
+cursor:pointer;
+
+transition:.3s;
+
+font-size:20px;
+
+}
+
+.menu-item:hover{
+
+background:#2d3f62;
+
+}
+
+.active{
+
+background:#3f6fff;
+
+}
+
+.content{
+    flex:1;
+    padding:50px;
+    display:flex;
+    flex-direction:column;
+    align-items:flex-start;
+    justify-content:flex-start;
+    overflow-y:auto;
+    box-sizing:border-box;
+}
+
+.page h2{
+
+margin-bottom:30px;
+
+}
+
+.page{
+    width:100%;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:flex-start;
+    padding-top:20px;
+    animation:fade .3s;
+}
+
+@keyframes fade{
+
+from{
+
+opacity:0;
+
+transform:translateX(20px);
+
+}
+
+to{
+
+opacity:1;
+
+transform:translateX(0);
+
+}
+
+}
+
+#signUpBtn{
+background: transparent;
+color: white;
+border: 1px solid #6c4cff;
+border-radius: 8px;
+padding: 8px 14px;
+cursor: pointer;
+
+display: flex;
+align-items: center;
+gap: 8px;
+
+transition: 0.3s;
+}
+
+#signUpBtn:hover{
+background: #6c4cff;
+}
+#signUpBtn{
+background:#1f1f35;
+color:white;
+border:1px solid #6c4cff;
+border-radius:8px;
+padding:8px 15px;
+
+display:flex;
+align-items:center;
+gap:8px;
+
+cursor:pointer;
+transition:0.3s;
+}
+
+#signUpBtn:hover{
+background:#6c4cff;
+}
+
+#signUpBtn img{
+width:32px;
+height:32px;
+border-radius:50%;
+}
+.profile-menu{
+position:absolute;
+top:70px;
+right:20px;
+
+background:#1f1f35;
+border:1px solid #6c4cff;
+border-radius:10px;
+
+width:180px;
+
+display:none;
+
+overflow:hidden;
+box-shadow:0 10px 25px rgba(0,0,0,.4);
+}
+
+.profile-menu a{
+display:block;
+padding:12px 15px;
+color:white;
+text-decoration:none;
+}
+
+.profile-menu a:hover{
+background:#6c4cff;
+}
+.profile-box{
+position:relative;
+display:inline-block;
+}
+
+#signUpBtn{
+
+display:flex;
+align-items:center;
+gap:10px;
+
+background:#20202b;
+
+color:white;
+
+border:none;
+
+border-radius:12px;
+
+padding:10px 15px;
+
+cursor:pointer;
+
+transition:.25s;
+}
+
+#signUpBtn:hover{
+
+background:#2e2e42;
+
+}
+
+#signUpBtn img{
+
+width:38px;
+
+height:38px;
+
+border-radius:50%;
+
+}
+
+.profile-menu{
+
+display:none;
+
+position:absolute;
+
+top:60px;
+
+right:14px;
+
+width:230px;
+
+background:#1d1d1d;
+
+border-radius:15px;
+
+overflow:hidden;
+
+box-shadow:0 12px 35px rgba(0,0,0,.45);
+
+}
+
+.profile-menu a{
+
+display:block;
+
+padding:14px 18px;
+
+color:white;
+
+text-decoration:none;
+
+transition:.25s;
+
+}
+
+.profile-menu a:hover{
+
+background:#6c4cff;
+
+}
+
+.profile-menu hr{
+
+border:none;
+
+border-top:1px solid #333;
+
+}
+.show{
+
+display:block;
+
+}
+.avatar-container{
+    position:relative;
+    width:170px;
+    height:170px;
+    margin:25px auto;
+}
+
+#avatar{
+    width:170px;
+    height:170px;
+    border-radius:50%;
+    object-fit:cover;
+    border:5px solid #6c4cff;
+    box-shadow:0 12px 35px rgba(108,76,255,.45);
+    transition:.35s;
+}
+
+.avatar-overlay{
+    position:absolute;
+    inset:0;
+
+    border-radius:50%;
+
+    background:rgba(0,0,0,.55);
+
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+    align-items:center;
+
+    color:white;
+    font-size:18px;
+
+    opacity:0;
+
+    cursor:pointer;
+
+    transition:.3s;
+}
+
+.avatar-overlay{
+    position:absolute;
+    inset:0;
+
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+    align-items:center;
+
+    transform:translateY(12px);
+	margin-left: 25px;
+}
+
+.avatar-container:hover .avatar-overlay{
+    opacity:1;
+}
+
+.avatar-container:hover #avatar{
+    transform:scale(1.05);
+}
+
+.removePhotoBtn{
+
+    margin-top:15px;
+
+    background:none;
+
+    color:#ff6666;
+
+    border:none;
+
+    cursor:pointer;
+
+    font-size:15px;
+
+}
+
+.removePhotoBtn:hover{
+
+    color:white;
+
+}
+.avatar {
+    position: relative;
+    width: 150px;
+    height: 150px;
+    border-radius: 50%;
+    overflow: hidden;
+    cursor: pointer;
+}
+
+.avatar img{
+    width:100%;
+    height:100%;
+    object-fit:cover;
+}
+
+.avatar-overlay{
+    position:absolute;
+    inset:0;
+    background:rgba(0,0,0,.55);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    opacity:0;
+    transition:.25s;
+    color:#fff;
+    font-weight:600;
+}
+
+.avatar:hover .avatar-overlay{
+    opacity:1;
+}
+.profile-card{
+    width:500px;
+    margin:auto;
+    padding:45px;
+    border-radius:22px;
+    background:#202733;
+    border:1px solid rgba(255,255,255,.06);
+    box-shadow:
+        0 15px 40px rgba(0,0,0,.35);
+}
+.save-btn{
+    transition:.25s;
+}
+
+.save-btn:hover{
+    transform:translateY(-2px);
+    box-shadow:0 10px 30px rgba(110,70,255,.4);
+}
+.account-card{
+
+    width:760px;
+    max-width:90%;
+
+    margin:40px auto;
+
+    padding:45px;
+
+    background:rgba(25,30,45,.75);
+
+    backdrop-filter:blur(18px);
+
+    border:1px solid rgba(255,255,255,.08);
+
+    border-radius:22px;
+
+    box-shadow:0 20px 60px rgba(0,0,0,.45);
+
+}
+
+.pageTitle{
+
+    color:white;
+
+    font-size:30px;
+
+    margin-bottom:35px;
+
+    text-align:center;
+
+}
+
+.avatarSection{
+
+    text-align:center;
+
+}
+
+.avatarButtons{
+
+    display:flex;
+
+    justify-content:center;
+
+    gap:15px;
+
+    margin-top:15px;
+	
+
+}
+
+.changeBtn{
+
+    background:#4b63ff;
+
+    color:white;
+
+    border:none;
+
+    padding:12px 22px;
+
+    border-radius:12px;
+
+    cursor:pointer;
+
+    transition:.3s;
+
+}
+
+.changeBtn:hover{
+
+    background:#6581ff;
+
+    transform:translateY(-2px);
+
+}
+
+.saveBtn{
+
+    margin-top:40px;
+
+    width:100%;
+
+    padding:15px;
+
+    border:none;
+
+    border-radius:14px;
+
+    background:#6c4cff;
+
+    color:white;
+
+    font-size:16px;
+
+    font-weight:600;
+
+    cursor:pointer;
+
+    transition:.3s;
+
+}
+
+.saveBtn:hover{
+
+    transform:translateY(-2px);
+
+    box-shadow:0 12px 25px rgba(108,76,255,.45);
+
+}
+.removePhotoBtn:hover{
+
+    color:white;
+
+}
+.page{
+    padding:40px;
+}
+
+.card{
+    background:#20232c;
+    border-radius:16px;
+    padding:25px;
+    margin-top:20px;
+
+    border:1px solid rgba(255,255,255,.08);
+}
+
+.theme{
+    padding:15px 25px;
+    margin-right:15px;
+
+    border:none;
+
+    border-radius:10px;
+
+    background:#32384b;
+
+    color:white;
+
+    cursor:pointer;
+}
+
+.theme.active{
+    background:#2f6fff;
+}
+
+.settings-select{
+    width:250px;
+
+    padding:12px;
+
+    margin-top:15px;
+
+    border-radius:10px;
+
+    background:#32384b;
+
+    color:white;
+
+    border:none;
+}
+
+.primary{
+    background:#2f6fff;
+    color:white;
+}
+
+.danger{
+    background:#d63c3c;
+    color:white;
+}
+
+button{
+    padding:12px 20px;
+    border:none;
+    border-radius:10px;
+}
+/* ---------- DARK ---------- */
+body[data-theme="dark"]{
+    background:#0f1923;
+    color:white;
+}
+
+/* ---------- LIGHT ---------- */
+body[data-theme="light"]{
+    background:#f5f5f5;
+    color:#222;
+}
+
+/* ---------- BLUE ---------- */
+body[data-theme="blue"]{
+    background:#123b73;
+    color:white;
+}
+body[data-theme="light"] .container{
+    background:#ffffff;
+}
+
+body[data-theme="light"] .card{
+    background:#ececec;
+    color:#222;
+}
+
+body[data-theme="light"] .sidebar{
+    background:#dddddd;
+}
+body[data-theme="blue"] .container{
+    background:#173d75;
+}
+
+body[data-theme="blue"] .card{
+    background:#28559a;
+}
+
+body[data-theme="blue"] .sidebar{
+    background:#1b3f78;
+}
+
+@media (max-width: 700px) {
+html,
+body {
+    width: 100%;
+    max-width: 100%;
+    overflow-x: hidden;
+}
+
+/* HEADER */
+header {
+    height: auto;
+    min-height: 65px;
+    padding: 12px 15px;
+    gap: 10px;
+}
+
+.logo {
+    font-size: 22px;
+}
+
+/* MAIN CONTAINER */
+.container {
+    width: 100%;
+    min-height: calc(100vh - 65px);
+    display: flex;
+    flex-direction: column;
+}
+
+/* SIDEBAR */
+.sidebar {
+    width: 100%;
+    padding: 15px;
+    border-right: none;
+    border-bottom: 1px solid rgba(255,255,255,.08);
+}
+
+.sidebar h2 {
+    font-size: 22px;
+    margin-bottom: 15px;
+}
+
+.sidebar a {
+    padding: 12px 15px;
+    margin-bottom: 8px;
+}
+
+.menu-item {
+    padding: 12px 15px;
+    font-size: 17px;
+    margin-bottom: 8px;
+}
+
+/* CONTENT */
+.content {
+    width: 100%;
+    min-width: 0;
+    padding: 25px 15px;
+    overflow-x: hidden;
+}
+
+.page {
+    width: 100%;
+    padding: 20px 0;
+}
+
+.page h2 {
+    font-size: 26px;
+    margin-bottom: 20px;
+}
+
+/* ACCOUNT CARD */
+.account-card {
+    width: 100%;
+    max-width: 100%;
+    margin: 20px auto;
+    padding: 25px 15px;
+    border-radius: 18px;
+}
+
+/* PROFILE CARD */
+.profile-card {
+    width: 100%;
+    max-width: 100%;
+    padding: 25px 15px;
+    border-radius: 18px;
+}
+
+/* TITLE */
+.pageTitle {
+    font-size: 25px;
+    margin-bottom: 25px;
+}
+
+/* AVATAR */
+.avatar-container {
+    width: 150px;
+    height: 150px;
+    margin: 20px auto;
+}
+
+#avatar {
+    width: 150px;
+    height: 150px;
+}
+
+/* AVATAR BUTTONS */
+.avatarButtons {
+    width: 100%;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+}
+
+.changeBtn,
+.removePhotoBtn {
+    width: 100%;
+    max-width: 300px;
+}
+
+/* SAVE BUTTON */
+.saveBtn {
+    width: 100%;
+    margin-top: 25px;
+}
+
+/* SETTINGS CARDS */
+.card {
+    width: 100%;
+    padding: 20px 15px;
+    margin-top: 15px;
+}
+
+/* THEME BUTTONS */
+.theme {
+    width: 100%;
+    margin-right: 0;
+    margin-bottom: 10px;
+}
+
+/* SELECT */
+.settings-select {
+    width: 100%;
+    max-width: 100%;
+}
+
+/* PROFILE MENU */
+.profile-menu {
+    top: 55px;
+    right: 0;
+    width: min(230px, calc(100vw - 30px));
+}
+
+#signUpBtn {
+    padding: 8px 10px;
+}
+
+#signUpBtn img {
+    width: 32px;
+    height: 32px;
+}
+
+/* BUTTONS */
+button {
+    max-width: 100%;
+}
+}
+/* ========================= SMALL iPHONE ========================= */
+@media (max-width: 380px) {
+header {
+    padding: 10px 12px;
+}
+
+.logo {
+    font-size: 20px;
+}
+
+.content {
+    padding: 20px 10px;
+}
+
+.account-card,
+.profile-card {
+    padding: 20px 12px;
+}
+
+.pageTitle {
+    font-size: 23px;
+}
+
+.avatar-container {
+    width: 135px;
+    height: 135px;
+}
+
+#avatar {
+    width: 135px;
+    height: 135px;
+}
+
+.menu-item {
+    font-size: 16px;
+}
+}
+
+</style>
+	</header>
+	<body>
+	
+	
+
+
+	<div class="container">
+
+    <div class="sidebar">
+    <h2 id="settingsMenuTitle">⚙ Settings</h2>
+
+
+    <div id="menuAccount" class="menu-item active" onclick="showPage('account')">
+        👤 Account
+    </div>
+
+    <div id="menuAppearance" class="menu-item" onclick="showPage('appearance')">
+        🎨 Appearance
+    </div>
+
+
+	</div>
+<div id="account" class="page">
+
+    <div class="account-card">
+
+        <h1 id="accountTitle" class="pageTitle">Account Settings</h1>
+
+        <div class="avatarSection">
+
+            <div class="avatar-container">
+
+                <img id="avatar" src="images/default-avatar.png">
+
+                <label for="photoInput" class="avatar-overlay">
+   			 		📷
+  			  	<span id="changeLabel">Change</span>
+				</label>
+                <input type="file" id="photoInput" accept="image/*" hidden>
+
+            </div>
+
+            <h2 id="name"></h2>
+
+            <p id="email"></p>
+
+            <div class="avatarButtons">
+
+               <button class="changeBtn" onclick="document.getElementById('photoInput').click()">
+    			📷 <span id="changePhotoBtn">Change Photo</span>
+				</button>
+
+               <button class="removePhotoBtn">
+    			🗑 <span id="removePhotoBtn">Remove Photo</span>
+				</button>
+
+            </div>
+
+        </div>
+
+        <button class="saveBtn">
+    	💾 <span id="saveChangesBtn">Save Changes</span>
+		</button>
+
+    </div>
+
+</div>
+
+
+
+<div id="appearance" class="page" style="display:none">
+
+    <h1 id="appearanceTitle">  🎨 Appearance</h1>
+    
+	
+
+    <div class="card">
+
+        
+
+		<button class="theme active" data-theme="dark">
+			<span id="darkThemeBtn">Dark</span>
+		</button>
+
+		<button class="theme" data-theme="light">
+			<span id="lightThemeBtn">Light</span>
+		</button>
+
+		<button class="theme" data-theme="blue">
+			<span id="blueThemeBtn">Blue</span>
+		</button>
+
+    </div>
+
+</div>
+
+
+
+
+
+
+
+</div>
+
+	<script type="module" src="Firebase.js"></script>
+	<script type="module" src="Settings.js"></script>
+	<script>
+
+		function showPage(page){
+
+		document.querySelectorAll(".page").forEach(function(item){
+
+		item.style.display="none";
+
+		});
+
+		document.getElementById(page).style.display="block";
+
+		document.querySelectorAll(".menu-item").forEach(function(item){
+
+		item.classList.remove("active");
+
+		});
+
+		event.target.classList.add("active");
+
+		}
+
+	</script>
+
+
+	</body>
+</html>
