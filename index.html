@@ -29,6 +29,11 @@
         <a href="#prices">Цены</a>
         <a href="#contacts">Контакты</a>
     </nav>
+    <div class="header-auth">
+        <button class="auth-button auth-login" type="button" data-open-auth="login">Войти</button>
+        <button class="auth-button auth-register" type="button" data-open-auth="register">Регистрация</button>
+    </div>
+    <button class="mobile-menu-toggle" type="button" aria-label="Открыть меню" aria-expanded="false">☰</button>
 
    
 
@@ -1265,8 +1270,120 @@ h1 {
     gap: 15px;
 }
 }
+
+    /* Added: authentication UI and responsive header */
+    .header-auth { display:flex; align-items:center; gap:10px; }
+    .auth-button { cursor:pointer; border:0; border-radius:10px; padding:10px 15px; font-weight:700; font-size:14px; color:#fff; }
+    .auth-login { background:transparent; color:#c2cce0; border:1px solid rgba(255,255,255,.12); }
+    .auth-register { background:linear-gradient(135deg,#3178ff,#4d68ff); box-shadow:0 8px 25px rgba(49,120,255,.2); }
+    .mobile-menu-toggle { display:none; cursor:pointer; border:1px solid rgba(255,255,255,.14); color:white; background:#101a2d; border-radius:9px; font-size:20px; padding:7px 11px; }
+    .auth-modal-backdrop { position:fixed; inset:0; z-index:2000; background:rgba(1,5,14,.78); backdrop-filter:blur(8px); display:none; align-items:center; justify-content:center; padding:18px; }
+    .auth-modal-backdrop.open { display:flex; }
+    .auth-modal { width:min(440px,100%); background:#0b1324; border:1px solid rgba(111,148,220,.24); border-radius:20px; padding:25px; box-shadow:0 25px 90px rgba(0,0,0,.45); position:relative; }
+    .auth-modal h2 { font-size:25px; margin-bottom:8px; }
+    .auth-modal p { color:#aab5c9; line-height:1.5; margin-bottom:18px; }
+    .auth-close { position:absolute; top:12px; right:14px; background:transparent; color:#aab5c9; border:0; font-size:25px; cursor:pointer; }
+    .auth-tabs { display:flex; gap:8px; margin-bottom:18px; }
+    .auth-tab { flex:1; border:1px solid rgba(255,255,255,.12); color:#aab5c9; background:#101a2d; padding:10px; border-radius:9px; cursor:pointer; }
+    .auth-tab.active { background:rgba(49,120,255,.2); border-color:#3178ff; color:white; }
+    .auth-form label { display:block; font-size:13px; color:#aab5c9; margin:12px 0 6px; }
+    .auth-form input { width:100%; border-radius:9px; border:1px solid rgba(255,255,255,.14); background:#050914; color:white; padding:12px; font-size:16px; outline:none; }
+    .auth-form input:focus { border-color:#3178ff; }
+    .auth-submit { width:100%; margin-top:18px; border:0; cursor:pointer; border-radius:10px; padding:13px; color:white; font-weight:700; background:linear-gradient(135deg,#3178ff,#4d68ff); }
+    .auth-note { margin-top:12px; font-size:12px; color:#77839c; text-align:center; }
+    @media (max-width:900px) { header { padding:0 20px; } nav { gap:25px; } }
+    @media (max-width:700px) {
+        header { height:auto; min-height:68px; padding:12px 16px; flex-wrap:wrap; gap:12px; }
+        .logo-text { font-size:17px; }
+        .logo-icon { width:34px; height:34px; }
+        .mobile-menu-toggle { display:block; margin-left:auto; }
+        nav { display:none; order:4; width:100%; margin:0; flex-direction:column; align-items:stretch; gap:0; padding:4px 0 8px; }
+        nav.mobile-open { display:flex; }
+        nav a { padding:12px 5px; font-size:16px; border-top:1px solid rgba(255,255,255,.06); }
+        nav a.active::after { display:none; }
+        .header-auth { order:3; width:100%; justify-content:center; }
+        .header-auth .auth-button { flex:1; }
+        .hero { padding-top:140px; }
+    }
+
 </style>
  
+
+
+<div class="auth-modal-backdrop" id="authModal" aria-hidden="true">
+  <div class="auth-modal" role="dialog" aria-modal="true" aria-labelledby="authTitle">
+    <button class="auth-close" type="button" aria-label="Закрыть">&times;</button>
+    <h2 id="authTitle">Добро пожаловать</h2>
+    <p id="authSubtitle">Создайте аккаунт Way of Skill.</p>
+    <div class="auth-tabs">
+      <button class="auth-tab active" type="button" data-auth-tab="register">Регистрация</button>
+      <button class="auth-tab" type="button" data-auth-tab="login">Вход</button>
+    </div>
+    <form class="auth-form" id="authForm">
+      <div id="nameField"><label for="authName">Имя</label><input id="authName" name="name" autocomplete="name" placeholder="Ваше имя"></div>
+      <label for="authEmail">Email</label>
+      <input id="authEmail" name="email" type="email" autocomplete="email" required placeholder="name@example.com">
+      <label for="authPassword">Пароль</label>
+      <input id="authPassword" name="password" type="password" autocomplete="new-password" minlength="6" required placeholder="Не менее 6 символов">
+      <div id="confirmPasswordField"><label for="authPasswordConfirm">Повторите пароль</label><input id="authPasswordConfirm" type="password" autocomplete="new-password" minlength="6" placeholder="Повторите пароль"></div>
+      <button class="auth-submit" type="submit" id="authSubmit">Создать аккаунт</button>
+      <div class="auth-note" id="authMessage">Подключение регистрации будет завершено на следующем этапе.</div>
+    </form>
+  </div>
+</div>
+
+<script>
+(function(){
+  const modal = document.getElementById('authModal');
+  const form = document.getElementById('authForm');
+  const tabs = document.querySelectorAll('[data-auth-tab]');
+  const title = document.getElementById('authTitle');
+  const subtitle = document.getElementById('authSubtitle');
+  const submit = document.getElementById('authSubmit');
+  const message = document.getElementById('authMessage');
+  const nameField = document.getElementById('nameField');
+  const confirmField = document.getElementById('confirmPasswordField');
+  let mode = 'register';
+  function setMode(next) {
+    mode = next;
+    const isRegister = mode === 'register';
+    tabs.forEach(t => t.classList.toggle('active', t.dataset.authTab === mode));
+    title.textContent = isRegister ? 'Создать аккаунт' : 'Войти в аккаунт';
+    subtitle.textContent = isRegister ? 'Зарегистрируйтесь в Way of Skill.' : 'Введите данные вашего аккаунта.';
+    submit.textContent = isRegister ? 'Создать аккаунт' : 'Войти';
+    nameField.style.display = isRegister ? '' : 'none';
+    confirmField.style.display = isRegister ? '' : 'none';
+    document.getElementById('authPassword').autocomplete = isRegister ? 'new-password' : 'current-password';
+    message.textContent = 'Форма готова. Реальное подключение Supabase будет настроено следующим этапом.';
+  }
+  function openModal(which) { modal.classList.add('open'); modal.setAttribute('aria-hidden','false'); setMode(which || 'register'); }
+  function closeModal() { modal.classList.remove('open'); modal.setAttribute('aria-hidden','true'); }
+  document.querySelectorAll('[data-open-auth]').forEach(btn => btn.addEventListener('click', () => openModal(btn.dataset.openAuth)));
+  tabs.forEach(tab => tab.addEventListener('click', () => setMode(tab.dataset.authTab)));
+  modal.querySelector('.auth-close').addEventListener('click', closeModal);
+  modal.addEventListener('click', e => { if (e.target === modal) closeModal(); });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
+  form.addEventListener('submit', e => {
+    e.preventDefault();
+    const password = document.getElementById('authPassword').value;
+    const confirm = document.getElementById('authPasswordConfirm').value;
+    if (mode === 'register' && password !== confirm) { message.textContent = 'Пароли не совпадают. Проверьте и повторите.'; return; }
+    message.textContent = 'Форма интерфейса готова. Подключим Supabase для реальной регистрации и входа.';
+  });
+  const menuBtn = document.querySelector('.mobile-menu-toggle');
+  const nav = document.querySelector('header nav');
+  if (menuBtn && nav) {
+    menuBtn.addEventListener('click', () => {
+      const open = nav.classList.toggle('mobile-open');
+      menuBtn.setAttribute('aria-expanded', open ? 'true' : 'false');
+      menuBtn.textContent = open ? '✕' : '☰';
+    });
+    nav.querySelectorAll('a').forEach(a => a.addEventListener('click', () => {
+      nav.classList.remove('mobile-open'); menuBtn.setAttribute('aria-expanded','false'); menuBtn.textContent='☰';
+    }));
+  }
+})();
+</script>
 
 </body>
 </html>
