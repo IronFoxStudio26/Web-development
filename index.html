@@ -1308,6 +1308,26 @@ h1 {
         .hero { padding-top:140px; }
     }
 
+ 
+/* Mobile header cleanup + account cabinet */
+.cabinet-nav { display:flex; gap:7px; margin:12px 0 18px; }
+.cabinet-tab { flex:1; min-width:0; padding:9px 5px; border:1px solid rgba(255,255,255,.12); border-radius:9px; background:#101a2d; color:#aab5c9; font-size:13px; cursor:pointer; }
+.cabinet-tab.active { border-color:#3178ff; color:#fff; background:rgba(49,120,255,.18); }
+.cabinet-card { border:1px solid rgba(111,148,220,.2); background:#101a2d; border-radius:12px; padding:14px; display:flex; flex-direction:column; gap:7px; }
+.cabinet-card small { color:#8492ac; font-size:12px; }
+.cabinet-card strong { color:#fff; overflow-wrap:anywhere; }
+.cabinet-card p, .cabinet-info { color:#aab5c9; font-size:13px; line-height:1.5; margin:8px 0; }
+#passwordSettingsForm { margin-top:18px; padding-top:16px; border-top:1px solid rgba(255,255,255,.1); }
+@media (max-width:700px) {
+  .header-auth { display:flex; width:100%; order:3; gap:8px; flex-wrap:nowrap; justify-content:stretch; overflow:visible; }
+  .header-auth .auth-button { flex:1 1 0; min-width:0; max-width:50%; padding:10px 6px; font-size:13px; white-space:normal; line-height:1.15; }
+  header { overflow:visible; }
+  .auth-modal { width:min(460px,100%); }
+}
+@media (max-width:380px) {
+  .header-auth .auth-button { font-size:12px; padding:9px 4px; }
+  .cabinet-tab { font-size:12px; }
+}
 </style>
  
 
@@ -1317,7 +1337,7 @@ h1 {
     <button class="auth-close" type="button" aria-label="Закрыть">&times;</button>
     <h2 id="authTitle">Добро пожаловать</h2>
     <p id="authSubtitle">Создайте аккаунт Way of Skill.</p>
-    <div class="auth-tabs">
+    <div class="auth-tabs" id="authTabs">
       <button class="auth-tab active" type="button" data-auth-tab="register">Регистрация</button>
       <button class="auth-tab" type="button" data-auth-tab="login">Вход</button>
     </div>
@@ -1331,10 +1351,154 @@ h1 {
       <button class="auth-submit" type="submit" id="authSubmit">Создать аккаунт</button>
       <div class="auth-note" id="authMessage" role="status" aria-live="polite">Подключаем безопасную авторизацию…</div>
     </form>
+    <div id="cabinetView" style="display:none">
+      <div class="cabinet-nav">
+        <button type="button" class="cabinet-tab active" data-cabinet-tab="profile">Профиль</button>
+        <button type="button" class="cabinet-tab" data-cabinet-tab="applications">Мои заявки</button>
+        <button type="button" class="cabinet-tab" data-cabinet-tab="settings">Настройки</button>
+      </div>
+      <section class="cabinet-panel" data-cabinet-panel="profile">
+        <div class="cabinet-card"><small>Имя</small><strong id="cabinetName">—</strong><small>Email</small><strong id="cabinetEmail">—</strong><small>Аккаунт Way of Skill</small></div>
+        <p class="cabinet-info">Здесь будут отображаться данные вашего аккаунта.</p>
+      </section>
+      <section class="cabinet-panel" data-cabinet-panel="applications" style="display:none">
+        <div class="cabinet-card"><strong>Мои заявки</strong><p>После подключения базы заявок здесь появятся ваши обращения, даты отправки и текущие статусы.</p></div>
+        <button type="button" class="auth-submit" id="applyLaterBtn">Подать заявку</button>
+        <div class="auth-note" id="applicationInfo">Формы и сохранение заявок подключим следующим этапом.</div>
+      </section>
+      <section class="cabinet-panel" data-cabinet-panel="settings" style="display:none">
+        <form id="profileSettingsForm" class="auth-form">
+          <label for="profileName">Имя</label><input id="profileName" autocomplete="name" required>
+          <label>Email (изменение email пока не включено)</label><input id="profileEmail" type="email" disabled>
+          <button class="auth-submit" type="submit">Сохранить имя</button>
+          <div class="auth-note" id="profileSaveMessage"></div>
+        </form>
+        <form id="passwordSettingsForm" class="auth-form">
+          <label for="newAccountPassword">Новый пароль</label><input id="newAccountPassword" type="password" minlength="8" autocomplete="new-password" placeholder="Минимум 8 символов" required>
+          <button class="auth-submit" type="submit">Изменить пароль</button>
+          <div class="auth-note" id="passwordSaveMessage"></div>
+        </form>
+      </section>
+    </div>
   </div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+(function(){
+  const modal = document.getElementById('authModal'), form = document.getElementById('authForm');
+  const tabs = document.querySelectorAll('[data-auth-tab]'), title = document.getElementById('authTitle');
+  const subtitle = document.getElementById('authSubtitle'), submit = document.getElementById('authSubmit');
+  const message = document.getElementById('authMessage'), nameField = document.getElementById('nameField');
+  const confirmField = document.getElementById('confirmPasswordField'), cabinetView = document.getElementById('cabinetView');
+  const authTabs = document.getElementById('authTabs');
+  let mode = 'register', currentSession = null;
+  const SUPABASE_URL = 'https://bhvfaujsjoliyguxqrio.supabase.co';
+  const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_TGx00PwO6-NiJ3SFh7Ad5Q_7Y_06GMR';
+  const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
+  const authButtons = document.querySelector('.header-auth');
+
+  function setAuthMessage(text, isError=false) { message.textContent=text; message.style.color=isError?'#ff9b9b':'#aab5c9'; }
+  function refreshCabinet(user) {
+    if(!user) return;
+    const displayName=user.user_metadata?.full_name || user.user_metadata?.name || 'Пользователь';
+    document.getElementById('cabinetName').textContent=displayName;
+    document.getElementById('cabinetEmail').textContent=user.email||'';
+    document.getElementById('profileName').value=displayName==='Пользователь'?'':displayName;
+    document.getElementById('profileEmail').value=user.email||'';
+  }
+  function updateAuthUI(session) {
+    currentSession=session;
+    if(!authButtons) return;
+    authButtons.querySelectorAll('[data-account-action]').forEach(b=>b.remove());
+    if(session?.user) {
+      authButtons.querySelectorAll('[data-open-auth]').forEach(b=>b.remove());
+      const account=document.createElement('button');
+      account.type='button'; account.className='auth-button auth-login'; account.dataset.accountAction='account';
+      account.textContent='Личный кабинет'; account.addEventListener('click',()=>openModal('account'));
+      const logout=document.createElement('button');
+      logout.type='button'; logout.className='auth-button auth-register'; logout.dataset.accountAction='logout'; logout.textContent='Выйти';
+      logout.addEventListener('click',async()=>{const {error}=await supabaseClient.auth.signOut(); if(error)alert('Не удалось выйти: '+error.message);});
+      authButtons.append(account,logout);
+    } else {
+      if(!authButtons.querySelector('[data-open-auth="login"]')) {
+        const login=document.createElement('button'); login.type='button'; login.className='auth-button auth-login'; login.dataset.openAuth='login'; login.textContent='Войти';
+        login.addEventListener('click',()=>openModal('login')); authButtons.append(login);
+      }
+      if(!authButtons.querySelector('[data-open-auth="register"]')) {
+        const register=document.createElement('button'); register.type='button'; register.className='auth-button auth-register'; register.dataset.openAuth='register'; register.textContent='Регистрация';
+        register.addEventListener('click',()=>openModal('register')); authButtons.append(register);
+      }
+    }
+  }
+  function setCabinetTab(tabName) {
+    document.querySelectorAll('[data-cabinet-tab]').forEach(b=>b.classList.toggle('active',b.dataset.cabinetTab===tabName));
+    document.querySelectorAll('[data-cabinet-panel]').forEach(p=>p.style.display=p.dataset.cabinetPanel===tabName?'':'none');
+  }
+  function setMode(next) {
+    mode=next;
+    const register=mode==='register', login=mode==='login', account=mode==='account';
+    tabs.forEach(t=>{t.classList.toggle('active',t.dataset.authTab===mode);t.style.display=account?'none':'';});
+    authTabs.style.display=account?'none':'';
+    title.textContent=account?'Личный кабинет':(register?'Создать аккаунт':'Войти в аккаунт');
+    subtitle.textContent=account?'Управление профилем и заявками.':(register?'Зарегистрируйтесь в Way of Skill.':'Введите данные вашего аккаунта.');
+    form.style.display=account?'none':'';
+    cabinetView.style.display=account?'':'none';
+    nameField.style.display=register?'':'none'; confirmField.style.display=register?'':'none';
+    document.querySelectorAll('#authForm label[for=authEmail], #authEmail, #authForm label[for=authPassword], #authPassword').forEach(el=>el.style.display=account?'none':'');
+    document.getElementById('authPassword').autocomplete=register?'new-password':'current-password';
+    if(account && currentSession?.user){refreshCabinet(currentSession.user);setCabinetTab('profile');}
+    if(!account) setAuthMessage('');
+  }
+  function openModal(which){modal.classList.add('open');modal.setAttribute('aria-hidden','false');setMode(which||'register');}
+  function closeModal(){modal.classList.remove('open');modal.setAttribute('aria-hidden','true');}
+  document.querySelectorAll('[data-open-auth]').forEach(btn=>btn.addEventListener('click',()=>openModal(btn.dataset.openAuth)));
+  tabs.forEach(tab=>tab.addEventListener('click',()=>setMode(tab.dataset.authTab)));
+  document.querySelectorAll('[data-cabinet-tab]').forEach(btn=>btn.addEventListener('click',()=>setCabinetTab(btn.dataset.cabinetTab)));
+  modal.querySelector('.auth-close').addEventListener('click',closeModal);
+  modal.addEventListener('click',e=>{if(e.target===modal)closeModal();});
+  document.addEventListener('keydown',e=>{if(e.key==='Escape')closeModal();});
+  document.getElementById('profileSettingsForm').addEventListener('submit',async e=>{
+    e.preventDefault(); const name=document.getElementById('profileName').value.trim();
+    const status=document.getElementById('profileSaveMessage'); status.textContent='Сохраняем…';
+    const {data,error}=await supabaseClient.auth.updateUser({data:{full_name:name}});
+    if(error){status.textContent=error.message;status.style.color='#ff9b9b';}
+    else{refreshCabinet(data.user);status.textContent='Имя сохранено.';status.style.color='#aab5c9';}
+  });
+  document.getElementById('passwordSettingsForm').addEventListener('submit',async e=>{
+    e.preventDefault(); const pwd=document.getElementById('newAccountPassword').value;
+    const status=document.getElementById('passwordSaveMessage'); status.textContent='Обновляем пароль…';
+    const {error}=await supabaseClient.auth.updateUser({password:pwd});
+    if(error){status.textContent=error.message;status.style.color='#ff9b9b';}
+    else{status.textContent='Пароль успешно изменён.';status.style.color='#aab5c9';e.target.reset();}
+  });
+  document.getElementById('applyLaterBtn').addEventListener('click',()=>{document.getElementById('applicationInfo').textContent='Подача и сохранение заявок будет подключена после настройки базы данных.';});
+  supabaseClient.auth.getSession().then(({data})=>updateAuthUI(data.session));
+  supabaseClient.auth.onAuthStateChange((_event,session)=>updateAuthUI(session));
+  form.addEventListener('submit',async e=>{
+    e.preventDefault(); submit.disabled=true;
+    const email=document.getElementById('authEmail').value.trim(), password=document.getElementById('authPassword').value, confirm=document.getElementById('authPasswordConfirm').value;
+    try{
+      if(mode==='register'){
+        if(password.length<8){setAuthMessage('Пароль должен содержать минимум 8 символов.',true);return;}
+        if(password!==confirm){setAuthMessage('Пароли не совпадают. Проверьте и повторите.',true);return;}
+        const name=document.getElementById('authName').value.trim();
+        const {data,error}=await supabaseClient.auth.signUp({email,password,options:{emailRedirectTo:'https://wayofskill.net/',data:{full_name:name}}});
+        if(error)throw error;
+        if(data.session){setAuthMessage('Аккаунт создан! Вы вошли в систему.');updateAuthUI(data.session);}
+        else setAuthMessage('Регистрация отправлена. Проверьте почту и подтвердите email, чтобы войти.');
+      } else {
+        const {data,error}=await supabaseClient.auth.signInWithPassword({email,password});
+        if(error)throw error; setAuthMessage('Вы успешно вошли!'); updateAuthUI(data.session);
+      }
+    }catch(err){setAuthMessage(err.message||'Возникла ошибка. Попробуйте ещё раз.',true);}
+    finally{submit.disabled=false;}
+  });
+  const menuBtn=document.querySelector('.mobile-menu-toggle'),nav=document.querySelector('header nav');
+  if(menuBtn&&nav){menuBtn.addEventListener('click',()=>{const open=nav.classList.toggle('mobile-open');menuBtn.setAttribute('aria-expanded',open?'true':'false');menuBtn.textContent=open?'✕':'☰';});
+    nav.querySelectorAll('a').forEach(a=>a.addEventListener('click',()=>{nav.classList.remove('mobile-open');menuBtn.setAttribute('aria-expanded','false');menuBtn.textContent='☰';}));}
+})();
+</script>
 <script>
 (function(){
   const modal = document.getElementById('authModal');
