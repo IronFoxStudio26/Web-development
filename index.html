@@ -1289,6 +1289,8 @@ h1 {
     .auth-form label { display:block; font-size:13px; color:#aab5c9; margin:12px 0 6px; }
     .auth-form input { width:100%; border-radius:9px; border:1px solid rgba(255,255,255,.14); background:#050914; color:white; padding:12px; font-size:16px; outline:none; }
     .auth-form input:focus { border-color:#3178ff; }
+    .auth-submit:disabled { opacity:.65; cursor:wait; }
+    @media (max-width:480px) { .auth-modal { padding:20px 16px; max-height:90vh; overflow:auto; } .auth-modal h2 { font-size:22px; } }
     .auth-submit { width:100%; margin-top:18px; border:0; cursor:pointer; border-radius:10px; padding:13px; color:white; font-weight:700; background:linear-gradient(135deg,#3178ff,#4d68ff); }
     .auth-note { margin-top:12px; font-size:12px; color:#77839c; text-align:center; }
     @media (max-width:900px) { header { padding:0 20px; } nav { gap:25px; } }
@@ -1324,14 +1326,15 @@ h1 {
       <label for="authEmail">Email</label>
       <input id="authEmail" name="email" type="email" autocomplete="email" required placeholder="name@example.com">
       <label for="authPassword">Пароль</label>
-      <input id="authPassword" name="password" type="password" autocomplete="new-password" minlength="6" required placeholder="Не менее 6 символов">
-      <div id="confirmPasswordField"><label for="authPasswordConfirm">Повторите пароль</label><input id="authPasswordConfirm" type="password" autocomplete="new-password" minlength="6" placeholder="Повторите пароль"></div>
+      <input id="authPassword" name="password" type="password" autocomplete="new-password" minlength="8" required placeholder="Не менее 8 символов">
+      <div id="confirmPasswordField"><label for="authPasswordConfirm">Повторите пароль</label><input id="authPasswordConfirm" type="password" autocomplete="new-password" minlength="8" placeholder="Повторите пароль"></div>
       <button class="auth-submit" type="submit" id="authSubmit">Создать аккаунт</button>
-      <div class="auth-note" id="authMessage">Подключение регистрации будет завершено на следующем этапе.</div>
+      <div class="auth-note" id="authMessage" role="status" aria-live="polite">Подключаем безопасную авторизацию…</div>
     </form>
   </div>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 (function(){
   const modal = document.getElementById('authModal');
@@ -1347,14 +1350,16 @@ h1 {
   function setMode(next) {
     mode = next;
     const isRegister = mode === 'register';
-    tabs.forEach(t => t.classList.toggle('active', t.dataset.authTab === mode));
-    title.textContent = isRegister ? 'Создать аккаунт' : 'Войти в аккаунт';
-    subtitle.textContent = isRegister ? 'Зарегистрируйтесь в Way of Skill.' : 'Введите данные вашего аккаунта.';
-    submit.textContent = isRegister ? 'Создать аккаунт' : 'Войти';
+    const isLogin = mode === 'login';
+    tabs.forEach(t => { t.classList.toggle('active', t.dataset.authTab === mode); t.style.display = (mode === 'account') ? 'none' : ''; });
+    title.textContent = mode === 'account' ? 'Личный кабинет' : (isRegister ? 'Создать аккаунт' : 'Войти в аккаунт');
+    subtitle.textContent = mode === 'account' ? 'Раздел личного кабинета подготовим следующим этапом.' : (isRegister ? 'Зарегистрируйтесь в Way of Skill.' : 'Введите данные вашего аккаунта.');
+    submit.textContent = mode === 'account' ? 'Закрыть' : (isRegister ? 'Создать аккаунт' : 'Войти');
     nameField.style.display = isRegister ? '' : 'none';
     confirmField.style.display = isRegister ? '' : 'none';
+    document.querySelectorAll('#authForm label[for=authEmail], #authEmail, #authForm label[for=authPassword], #authPassword').forEach(el => el.style.display = mode === 'account' ? 'none' : '');
     document.getElementById('authPassword').autocomplete = isRegister ? 'new-password' : 'current-password';
-    message.textContent = 'Форма готова. Реальное подключение Supabase будет настроено следующим этапом.';
+    message.textContent = mode === 'account' ? 'Личный кабинет будет реализован следующим этапом.' : ''; 
   }
   function openModal(which) { modal.classList.add('open'); modal.setAttribute('aria-hidden','false'); setMode(which || 'register'); }
   function closeModal() { modal.classList.remove('open'); modal.setAttribute('aria-hidden','true'); }
@@ -1363,12 +1368,76 @@ h1 {
   modal.querySelector('.auth-close').addEventListener('click', closeModal);
   modal.addEventListener('click', e => { if (e.target === modal) closeModal(); });
   document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
-  form.addEventListener('submit', e => {
+  const SUPABASE_URL = 'https://bhvfaujsoliyguxqrio.supabase.co';
+  const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_TGx00PwO6-NiJ3SFh7Ad5Q_7Y_06GMR';
+  const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
+  const authButtons = document.querySelector('.header-auth');
+
+  function setAuthMessage(text, isError=false) {
+    message.textContent = text;
+    message.style.color = isError ? '#ff9b9b' : '#aab5c9';
+  }
+  function updateAuthUI(session) {
+    if (!authButtons) return;
+    const existing = authButtons.querySelector('[data-account-action]');
+    if (existing) existing.remove();
+    if (session && session.user) {
+      const account = document.createElement('button');
+      account.type = 'button'; account.className = 'auth-button auth-login';
+      account.dataset.accountAction = 'account'; account.textContent = 'Личный кабинет';
+      account.addEventListener('click', () => openModal('account'));
+      const logout = document.createElement('button');
+      logout.type = 'button'; logout.className = 'auth-button auth-register';
+      logout.dataset.accountAction = 'logout'; logout.textContent = 'Выйти';
+      logout.addEventListener('click', async () => {
+        const { error } = await supabaseClient.auth.signOut();
+        if (error) alert('Не удалось выйти: ' + error.message);
+      });
+      authButtons.querySelectorAll('[data-open-auth]').forEach(b => b.style.display='none');
+      authButtons.append(account, logout);
+    } else {
+      authButtons.querySelectorAll('[data-open-auth]').forEach(b => b.style.display='');
+    }
+  }
+  supabaseClient.auth.getSession().then(({data}) => updateAuthUI(data.session));
+  supabaseClient.auth.onAuthStateChange((_event, session) => updateAuthUI(session));
+
+  form.addEventListener('submit', async e => {
     e.preventDefault();
+    submit.disabled = true;
+    const email = document.getElementById('authEmail').value.trim();
     const password = document.getElementById('authPassword').value;
     const confirm = document.getElementById('authPasswordConfirm').value;
-    if (mode === 'register' && password !== confirm) { message.textContent = 'Пароли не совпадают. Проверьте и повторите.'; return; }
-    message.textContent = 'Форма интерфейса готова. Подключим Supabase для реальной регистрации и входа.';
+    try {
+      if (mode === 'account') { closeModal(); return; }
+      if (mode === 'register') {
+        if (password.length < 8) { setAuthMessage('Пароль должен содержать минимум 8 символов.', true); return; }
+        if (password !== confirm) { setAuthMessage('Пароли не совпадают. Проверьте и повторите.', true); return; }
+        const name = document.getElementById('authName').value.trim();
+        const { data, error } = await supabaseClient.auth.signUp({
+          email, password,
+          options: { emailRedirectTo: 'https://wayofskill.net/', data: { full_name: name } }
+        });
+        if (error) throw error;
+        if (data.session) {
+          setAuthMessage('Аккаунт создан! Вы вошли в систему.');
+          updateAuthUI(data.session);
+        } else {
+          setAuthMessage('Регистрация отправлена. Проверьте почту и подтвердите email, чтобы войти.');
+        }
+      } else if (mode === 'login') {
+        const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
+        if (error) throw error;
+        setAuthMessage('Вы успешно вошли!');
+        updateAuthUI(data.session);
+      } else {
+        setAuthMessage('Личный кабинет будет добавлен следующим этапом.');
+      }
+    } catch (err) {
+      setAuthMessage(err.message || 'Возникла ошибка. Попробуйте ещё раз.', true);
+    } finally {
+      submit.disabled = false;
+    }
   });
   const menuBtn = document.querySelector('.mobile-menu-toggle');
   const nav = document.querySelector('header nav');
